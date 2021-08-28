@@ -15,7 +15,7 @@ from random import choice, randint
 try:
     from PyQt5.QtCore import Qt
     from PyQt5.QtGui import QPixmap, QPainter, QFont, QIcon
-    from PyQt5.QtWidgets import QLabel, QMenu, QApplication
+    from PyQt5.QtWidgets import QLabel, QMenu, QApplication, QLineEdit, QWidget, QVBoxLayout
 except ImportError:
     from PySide2.QtCore import Qt
     from PySide2.QtGui import QPixmap, QPainter, QFont, QIcon
@@ -80,6 +80,49 @@ def about_qt():
     QApplication.instance().aboutQt()
 
 
+class widget(QMenu):
+    def __init__(self, *args, **kwargs):
+        super(widget, self).__init__(*args, **kwargs)
+        # layout = QVBoxLayout(self)
+        self.search = QLineEdit(self)
+        # self.context_menu = QMenu(self)
+        self.context_menu = self
+        # layout.addWidget(self.search)
+        # layout.addWidget(self.context_menu)
+
+        self.setStyleSheet("QMenu { menu-scrollable: 1; }");
+
+        self.init_menu()
+
+    def init_menu(self):
+        # 背景透明
+        self.context_menu.setAttribute(Qt.WA_TranslucentBackground)
+        # 无边框、去掉自带阴影
+        self.context_menu.setWindowFlags(
+            self.context_menu.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+
+        # 模拟菜单项
+        for i in range(10):
+            if i % 2 == 0:
+                action = self.context_menu.addAction('菜单 %d' % i, about_qt)
+                action.setEnabled(i % 4)
+            elif i % 3 == 0:
+                self.context_menu.addAction(get_icon(), '菜单 %d' % i, about_qt)
+            if i % 4 == 0:
+                self.context_menu.addSeparator()
+            if i % 5 == 0:
+                # 二级菜单
+                # 二级菜单
+                menu = QMenu('二级菜单 %d' % i, self.context_menu)
+                # 背景透明
+                menu.setAttribute(Qt.WA_TranslucentBackground)
+                # 无边框、去掉自带阴影
+                menu.setWindowFlags(menu.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+                for j in range(3):
+                    menu.addAction(get_icon(), '子菜单 %d' % j)
+                self.context_menu.addMenu(menu)
+
+
 class Window(QLabel):
 
     def __init__(self, *args, **kwargs):
@@ -87,8 +130,8 @@ class Window(QLabel):
         self.resize(400, 400)
         self.setAlignment(Qt.AlignCenter)
         self.setText('右键弹出菜单')
-        self.context_menu = QMenu(self)
-        self.init_menu()
+        self.context_menu = widget(self)
+        # self.init_menu()
 
     def contextMenuEvent(self, event):
         self.context_menu.exec_(event.globalPos())
@@ -101,7 +144,7 @@ class Window(QLabel):
             self.context_menu.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
 
         # 模拟菜单项
-        for i in range(10):
+        for i in range(20):
             if i % 2 == 0:
                 action = self.context_menu.addAction('菜单 %d' % i, about_qt)
                 action.setEnabled(i % 4)
